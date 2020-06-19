@@ -1,0 +1,305 @@
+<div
+  class="align-items-center"
+  style="margin-bottom: 10px; display: inline-flex; justify-content: flex-end;"
+>
+  <span
+    class="align-items-center iv2-filter-view"
+    [ngClass]="{
+											'iv2-filter-view-select-opened': ngSelectOpened
+										}"
+    hover-class="iv2-filter-hover"
+    ng-reflect-hover-class="iv-filter-hover"
+  >
+    <span
+      style="margin-left: 19px;
+                                            font-size: 12px;
+                                            font-weight: bold;
+                                            margin-right: 15px;
+                                            color: rgba(239, 239, 239, 0.5);"
+    >
+      Filter
+    </span>
+
+    <span class="ng-iv2-value-container" #iv2Container id="iv2-container">
+      <span *ngFor="let item of ngSelectCriteriaList" class="ng-iv2-value">
+        <span class="ng-iv2-value-label">
+          <img
+            *ngIf="item.data.kind == 'site'"
+            width="25px"
+            height="25px"
+            src="assets/images/iv/icon-filter-windpark.svg"
+          />
+          <img
+            *ngIf="item.data.kind == 'unitType'"
+            width="25px"
+            height="25px"
+            src="assets/images/iv/icon-filter-turbine-type.svg"
+          />
+          <img
+            *ngIf="item.data.kind == 'unit'"
+            width="25px"
+            height="25px"
+            src="assets/images/iv/icon-filter-turbine-name.svg"
+          />
+          <img
+            *ngIf="item.data.kind == 'defectType'"
+            width="25px"
+            height="25px"
+            src="assets/images/iv/icon-filter-annotation-type.svg"
+          />
+          <img
+            *ngIf="item.data.kind == 'defectClass'"
+            width="25px"
+            height="25px"
+            src="assets/images/iv/icon-filter-severity.svg"
+          />
+          <img
+            *ngIf="item.data.kind == 'bladeSide'"
+            width="25px"
+            height="25px"
+            src="assets/images/iv/icon-filter-side.svg"
+          />
+          <img
+            *ngIf="item.data.kind == 'bladeRadius'"
+            width="25px"
+            height="25px"
+            src="assets/images/iv/icon-blade.svg"
+          />
+          <span
+            *ngIf="item.data.kind == 'country'"
+            style="width: 35px; height: 12px;"
+            [class]="getFlag(item.data)"
+          ></span>
+          <ng-container
+            [ngTemplateOutlet]="item.data.name == 'Turbine' ? turbineitempill : filteritempill"
+            [ngTemplateOutletContext]="{ data: item }"
+          ></ng-container>
+          <!-- <span style="top: 1px; position: relative;">{{
+														item.kind == 'unit' ? item.data.name.turbine : getName(item.data)
+													}}</span> -->
+        </span>
+        <span
+          class="ng-iv2-value-icon right"
+          (click)="removeSearchCriterion(item)"
+          aria-hidden="true"
+          ><img
+            src="assets/images/iv/icon-close.svg"
+            width="24px"
+            height="24px"
+            style="cursor: pointer;"
+        /></span>
+      </span>
+
+      <span class="iv2-select-container">
+        <span style="max-width: 30px;">
+          <img
+            src="assets/images/iv/icon-add.svg"
+            width="40px"
+            height="40px"
+            style="
+                                                            position: relative; 
+                                                            left: -5px;
+                                                            cursor: pointer;"
+            popover="Please set a filter first to display a list."
+            placement="bottom"
+            [isOpen]="!(hasSelectedCriteriaEmptyBS | async) && !ngSelectFilter.isOpen"
+            #filterPopover="bs-popover"
+            (click)="focusAndOpenFilterNgSelect()"
+          />
+        </span>
+        <ng-select
+          #ngSelectFilter
+          [items]="$ngSelectFilterItems | async"
+          [multiple]="true"
+          [groupBy]="groupItemByName"
+          bindLabel="data.id"
+          [(ngModel)]="ngSelectCriteriaList"
+          (change)="onChangedFilterItems()"
+          (add)="onAddFilterItems($event)"
+          (open)="onOpenFilterNgSelectDropdown(ngSelectFilter)"
+          [hideSelected]="true"
+          [searchFn]="searchScopedSelectFilterItem"
+        >
+          <ng-template ng-header-tmp>
+            <div
+              class="btn-group ng-select-dropdown-header"
+              btnRadioGroup
+              [(ngModel)]="ngSelectFilterGroupRestriction"
+            >
+              <!-- TODO generate buttons through iteration -->
+              <button
+                class="btn btn-primary btn-light"
+                [btnRadio]="filterGroupRestriction.All"
+                tabindex="0"
+                role="button"
+                (click)="applyNgSelectFilter(filterGroupRestriction.All)"
+              >
+                All
+              </button>
+              <button
+                class="btn btn-primary btn-light"
+                [btnRadio]="filterGroupRestriction.Severity"
+                tabindex="0"
+                role="button"
+                (click)="applyNgSelectFilter(filterGroupRestriction.Severity)"
+              >
+                Severity
+              </button>
+              <button
+                class="btn btn-primary btn-light"
+                [btnRadio]="filterGroupRestriction.AnnotationType"
+                tabindex="0"
+                role="button"
+                (click)="applyNgSelectFilter(filterGroupRestriction.AnnotationType)"
+              >
+                Annotation Type
+              </button>
+              <button
+                class="btn btn-primary btn-light"
+                [btnRadio]="filterGroupRestriction.TurbineType"
+                tabindex="0"
+                role="button"
+                (click)="applyNgSelectFilter(filterGroupRestriction.TurbineType)"
+              >
+                Turbine Type
+              </button>
+              <button
+                class="btn btn-primary btn-light"
+                [btnRadio]="filterGroupRestriction.Country"
+                tabindex="0"
+                role="button"
+                (click)="applyNgSelectFilter(filterGroupRestriction.Country)"
+              >
+                Country
+              </button>
+              <button
+                class="btn btn-primary btn-light"
+                [btnRadio]="filterGroupRestriction.WindPark"
+                tabindex="0"
+                role="button"
+                (click)="applyNgSelectFilter(filterGroupRestriction.WindPark)"
+              >
+                Windpark
+              </button>
+              <!-- TODO Use last pseudo class for extra styling of last element (and maybe same for first)-->
+              <button
+                class="btn btn-primary btn-light"
+                [btnRadio]="filterGroupRestriction.Turbine"
+                tabindex="0"
+                role="button"
+                (click)="applyNgSelectFilter(filterGroupRestriction.Turbine)"
+              >
+                Turbine
+              </button>
+              <button
+                class="btn btn-primary btn-light"
+                [btnRadio]="filterGroupRestriction.BladSide"
+                tabindex="0"
+                role="button"
+                (click)="applyNgSelectFilter(filterGroupRestriction.BladSide)"
+              >
+                Blade Side
+              </button>
+              <button
+                class="btn btn-primary btn-light"
+                [btnRadio]="filterGroupRestriction.BladeRadius"
+                tabindex="0"
+                role="button"
+                (click)="applyNgSelectFilter(filterGroupRestriction.BladeRadius)"
+              >
+                Blade Radius
+              </button>
+            </div>
+          </ng-template>
+
+          <ng-template ng-option-tmp let-item="item">
+            <!-- <p style="color: white;">{{item | json}}</p> -->
+            <!-- <span class="img-background">
+															<img
+																width="30px"
+																height="30px"
+																src="assets/images/iv/{{ resolveCriterionIcon(item.data) }}.svg"
+																style="position: absolute;"
+															/>
+														</span> -->
+            <ng-container
+              [ngTemplateOutlet]="
+																item.data.name === 'Country' ? iconflagtemplate : icondefaulttemplate
+															"
+              [ngTemplateOutletContext]="{ data: item }"
+            ></ng-container>
+            <!-- TODO: Make this into a dynamic template -->
+            <!-- {{item | json}} -->
+            <!-- <span
+															*ngIf="item.name !== 'Turbine'"
+															style="
+																display: inline-flex; 
+																margin-left: 10px;
+																font-size: 14px;
+																font-weight: 500;
+															"
+														>
+															{{ getName(item.data) }}
+														</span> -->
+            <ng-container
+              [ngTemplateOutlet]="getTemplate(item.data.name)"
+              [ngTemplateOutletContext]="{ data: item }"
+            ></ng-container>
+            <!-- <ng-container
+															[ngTemplateOutlet]="item.data.name == 'Country' ? countryitem : filteritem"
+															[ngTemplateOutletContext]="{ data: item }"
+														></ng-container> -->
+          </ng-template>
+
+          <!-- Critic. not elegant. -->
+          <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+            <!-- <p style="color: black;">{{item | json}}</p> -->
+            <span *ngIf="getLabel(item) == 'Severity'">
+              {{ getLabel(item) }}
+              <a
+                class="addAll"
+                style="
+																	color: black; 
+																	padding-left: 5px;
+																	cursor: pointer;
+																"
+                (click)="addAllFilterItemsInThisGroup('defectClass')"
+              >
+                Add all Severities
+              </a>
+            </span>
+            <span *ngIf="getLabel(item) == 'Blade Radius'">
+              Distance from Flange
+              <a
+                class="addAll"
+                style="
+																	color: black; 
+																	padding-left: 5px;
+																	cursor: pointer;
+																"
+                (click)="addCustomBladeRadiusFilter()"
+              >
+                Add custom...
+              </a>
+            </span>
+            <span
+              *ngIf="getLabel(item) != 'Severity' && getLabel(item) != 'Blade Radius'"
+            >
+              {{ getLabel(item) }}
+            </span>
+          </ng-template>
+        </ng-select>
+      </span>
+    </span>
+  </span>
+</div>
+
+<ng-template #turbineitempill let-item="data">
+  <span style="top: 1px; position: relative;"
+    >{{ item.data.uniqueName.name.turbine }}</span
+  >
+</ng-template>
+
+<ng-template #filteritempill let-item="data">
+  <span style="top: 1px; position: relative;">{{ getName(item.data) }}</span>
+</ng-template>
